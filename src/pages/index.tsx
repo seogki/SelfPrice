@@ -3,21 +3,21 @@ import Main from "@/components/main";
 import { Inter } from "next/font/google";
 import Link from "next/link";
 import { Router } from "next/router";
-import Salary from "./salary";
+import Layout from "@/components/layout";
+import dayjs from "dayjs";
+import isLeapYear from "dayjs/plugin/isLeapYear"; // 윤년 판단 플러그인
+import "dayjs/locale/ko"; // 한국어 가져오기
 
+dayjs.extend(isLeapYear); // 플러그인 등록
+dayjs.locale("ko");
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   return (
     <>
-      <Link
-        href="/"
-        className={
-          "container-md flex flex-col items-center justify-start h-full px-24 pb-24 pt-12 overflow-y-auto"
-        }
-      >
-        <Main />
-      </Link>
+      <Layout>
+        <Main></Main>
+      </Layout>
     </>
   );
 }
