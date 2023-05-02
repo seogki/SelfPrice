@@ -1,5 +1,7 @@
 import Layout from "@/components/layout";
-import dayjs, { Dayjs } from "dayjs";
+import { addYear } from "@/utils/date";
+import { convertToWon } from "@/utils/money";
+
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -10,21 +12,31 @@ interface IncSalary {
   gap: number;
 }
 
+interface RealSalary {
+  salary: number;
+  gungang: number;
+  gukmin: number;
+  jangi: number;
+  goyong: number;
+  soduk: number;
+  jibangSoduk: number;
+}
+
 export default function Salary() {
+  const router = useRouter();
+  const salary = router.query.salary;
   const [incSalary, setIncSalary] = useState<IncSalary[]>([]);
   const [percentage, setPercentage] = useState<number>(5);
   const [percentages, setPercentages] = useState<number[]>([]);
-  const router = useRouter();
-  const salary = router.query.salary;
-
-  const convertToWorn = (x: number) => {
-    return `${x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
-  };
-
-  const addYear = (year: number) => {
-    const date = dayjs().add(year, "year");
-    return date.format("YYYY");
-  };
+  const [realSalary, setRealSalary] = useState<RealSalary>({
+    salary: -1,
+    gungang: -1,
+    gukmin: -1,
+    goyong: -1,
+    jangi: -1,
+    soduk: -1,
+    jibangSoduk: -1,
+  });
 
   useEffect(() => {
     if (!salary || typeof salary !== "string") {
@@ -47,9 +59,49 @@ export default function Salary() {
     for (let i = 1; i < 11; i++) {
       tempPercentages.push(i);
     }
+    handleRealSalary();
     setPercentages(tempPercentages);
     setIncSalary(temp);
   }, [percentage, salary]);
+
+  const handleRealSalary = () => {
+    if (!salary || typeof salary !== "string") return;
+    const real = parseInt(salary, 10) * 10000;
+    const monthSalary = real / 12;
+    const gukmin = (monthSalary * 4.5) / 100;
+    const gungang = (monthSalary * 3.545) / 100;
+    const yoyang = (gungang * 12.81) / 100;
+    const goyong = (monthSalary * 0.9) / 100;
+
+    let soduk = 0;
+    if (real <= 14000000) {
+      soduk = (monthSalary * 6) / 100;
+    } else if (real <= 50000000) {
+      soduk = 840000 + ((real - 14000000) * 15) / 100;
+    }
+    // } else if (real <= 88000000) {
+    //   res = 24;
+    // } else if (real <= 150000000) {
+    //   res = 35;
+    // } else if (real <= 300000000) {
+    //   res = 38;
+    // } else if (real <= 500000000) {
+    //   res = 40;
+    // } else if (real <= 1000000000) {
+    //   res = 42;
+    // } else {
+    //   res = 45;
+    // }
+
+    // const soduk = (monthSalary * res) / 100 / 12;
+    const jibangSoduk = soduk * 0.1;
+    console.debug("기존", real, monthSalary);
+    console.debug("소득세", { soduk, jibangSoduk });
+    console.debug("국민연금", gukmin);
+    console.debug("건강보험 / 요양보험", gungang, yoyang);
+
+    console.debug("고용보험", goyong);
+  };
 
   const handlePercentage = (percentage: number) => {
     setPercentage(percentage);
@@ -68,12 +120,15 @@ export default function Salary() {
             }
           >
             <p className={"tracking-wide"}>
-              {convertToWorn(parseInt(salary, 10) * 10000)} ￦
+              {convertToWon(parseInt(salary, 10) * 10000)} ￦
             </p>
             <p className={"tracking-wide"}>
               <b className={"text-green-500"}>{percentage}%</b> 상승률
             </p>
           </header>
+          <section className="text-black">
+            실수령액: {realSalary.salary}
+          </section>
           <section
             className={
               "flex text-black mt-4 md:mt-8 lg:mt-8 flex-wrap flex-row justify-center text-center"
@@ -121,9 +176,9 @@ export default function Salary() {
                       "h-full w-8/12 md:w-8/12 lg:w-8/12 lx:w-8/12 flex justify-center items-center flex-col"
                     }
                   >
-                    <div className={""}>{convertToWorn(item.salary)}만원</div>
+                    <div className={""}>{convertToWon(item.salary)}만원</div>
                     <div className={"text-rose-600"}>
-                      ~{convertToWorn(item.gap)}만원
+                      ~{convertToWon(item.gap)}만원
                     </div>
                   </div>
                 </div>
