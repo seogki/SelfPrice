@@ -67,40 +67,33 @@ export default function Salary() {
   const handleRealSalary = () => {
     if (!salary || typeof salary !== "string") return;
     const real = parseInt(salary, 10) * 10000;
-    const monthSalary = real / 12;
+    const realWithoutTax = parseInt(salary, 10) * 10000 - 200000 * 12;
+    const monthSalary = realWithoutTax / 12;
     const gukmin = (monthSalary * 4.5) / 100;
     const gungang = (monthSalary * 3.545) / 100;
-    const yoyang = (gungang * 12.81) / 100;
     const goyong = (monthSalary * 0.9) / 100;
-
+    const jangi = (gungang * 12.81) / 100;
     let soduk = 0;
-    if (real <= 14000000) {
-      soduk = (monthSalary * 6) / 100;
-    } else if (real <= 50000000) {
-      soduk = 840000 + ((real - 14000000) * 15) / 100;
+    if (real <= 30000000) {
+      const fourPercent = (real * 4) / 100;
+      soduk = (3100000 + fourPercent) / 12;
+      console.debug("four", fourPercent, (real * 15) / 100 / 12);
+    } else if (real <= 45000000) {
     }
-    // } else if (real <= 88000000) {
-    //   res = 24;
-    // } else if (real <= 150000000) {
-    //   res = 35;
-    // } else if (real <= 300000000) {
-    //   res = 38;
-    // } else if (real <= 500000000) {
-    //   res = 40;
-    // } else if (real <= 1000000000) {
-    //   res = 42;
-    // } else {
-    //   res = 45;
-    // }
 
-    // const soduk = (monthSalary * res) / 100 / 12;
-    const jibangSoduk = soduk * 0.1;
+    setRealSalary({
+      ...realSalary,
+      gukmin: parseInt(gukmin.toFixed(0)),
+      goyong: parseInt(goyong.toFixed(0)),
+      gungang: parseInt(gungang.toFixed(0)),
+      jangi: parseInt(jangi.toFixed(0)),
+    });
+
     console.debug("기존", real, monthSalary);
-    console.debug("소득세", { soduk, jibangSoduk });
-    console.debug("국민연금", gukmin);
-    console.debug("건강보험 / 요양보험", gungang, yoyang);
-
-    console.debug("고용보험", goyong);
+    console.debug("국민연금", realSalary.gukmin);
+    console.debug("건강보험 / 요양보험", realSalary.gungang, realSalary.jangi);
+    console.debug("고용보험", realSalary.goyong);
+    console.debug("간의 소득세", { soduk });
   };
 
   const handlePercentage = (percentage: number) => {
@@ -127,7 +120,10 @@ export default function Salary() {
             </p>
           </header>
           <section className="text-black">
-            실수령액: {realSalary.salary}
+            국민 : {convertToWon(realSalary.gukmin)} 건강 :{" "}
+            {convertToWon(realSalary.gungang)} 고용 :{" "}
+            {convertToWon(realSalary.goyong)} 장기 :{" "}
+            {convertToWon(realSalary.jangi)}
           </section>
           <section
             className={
